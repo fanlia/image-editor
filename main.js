@@ -38,7 +38,13 @@ document.querySelector('#app').innerHTML = `
     <p>
     <label>
     <span>透明:</span>
-    <input type="range" name="watermark_opacity" id="watermark_opacity" value="10"/>
+    <input type="range" name="watermark_opacity" id="watermark_opacity" value="20"/>
+    <label>
+    </p>
+    <p>
+    <label>
+    <span>密度:</span>
+    <input type="range" name="watermark_count" id="watermark_count" value="50"/>
     <label>
     </p>
     <p>
@@ -65,6 +71,7 @@ const watermark_font_size = document.querySelector('#watermark_font_size')
 const watermark_color = document.querySelector('#watermark_color')
 const watermark_opacity = document.querySelector('#watermark_opacity')
 const watermark_stroke = document.querySelector('#watermark_stroke')
+const watermark_count = document.querySelector('#watermark_count')
 const source_images = document.querySelector('#source_images')
 const preview_images = document.querySelector('#preview_images')
 const load_watermark_options = document.querySelector('#load_watermark_options')
@@ -115,6 +122,7 @@ class ImageEditor {
     color,
     stroke,
     opacity,
+    count = 4,
   }) {
     this.updateImage()
 
@@ -130,8 +138,8 @@ class ImageEditor {
     const { width: text_width } = ctx.measureText(text)
 
     // calculate points
-    const rows = 4
-    const cols = 4
+    const rows = count
+    const cols = count
 
     const width = Math.round(this.canvas.width / cols)
     const height = Math.round(this.canvas.height / rows)
@@ -201,6 +209,7 @@ const get_watermark_options = () => {
   const color = watermark_color.value
   const stroke = watermark_stroke.checked
   const opacity = +watermark_opacity.value
+  const count = Math.round(+watermark_count.value / 10)
 
   return {
     text,
@@ -209,6 +218,7 @@ const get_watermark_options = () => {
     color,
     stroke,
     opacity,
+    count,
   }
 }
 
@@ -238,6 +248,7 @@ watermark_font_family.oninput = update_watermark
 watermark_color.oninput = update_watermark
 watermark_stroke.onchange = update_watermark
 watermark_opacity.oninput = update_watermark
+watermark_count.oninput = update_watermark
 
 source_images.onchange = async (e) => {
   const files = e.target.files
@@ -256,6 +267,7 @@ load_watermark_options.onclick = () => {
       color,
       stroke,
       opacity,
+      count,
     } = JSON.parse(watermark_options_string)
     watermark_text.value = text
     watermark_font_size.value = font_size
@@ -263,6 +275,7 @@ load_watermark_options.onclick = () => {
     watermark_color.value = color
     watermark_stroke.checked = stroke
     watermark_opacity.value = opacity
+    watermark_count.value = count
   } catch (e) {}
 }
 
