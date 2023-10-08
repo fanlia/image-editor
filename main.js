@@ -44,7 +44,7 @@ document.querySelector('#app').innerHTML = `
     <p>
     <label>
     <span>密度:</span>
-    <input type="range" name="watermark_count" id="watermark_count" value="50"/>
+    <input type="range" name="watermark_count" id="watermark_count" value="5" min="0" max="10"/>
     <label>
     </p>
     <p>
@@ -123,7 +123,7 @@ class ImageEditor {
     color,
     stroke,
     opacity,
-    count = 4,
+    count = 5,
   }) {
     this.updateImage()
 
@@ -210,7 +210,7 @@ const get_watermark_options = () => {
   const color = watermark_color.value
   const stroke = watermark_stroke.checked
   const opacity = +watermark_opacity.value
-  const count = Math.round(+watermark_count.value / 10)
+  const count = +watermark_count.value
 
   return {
     text,
@@ -293,6 +293,8 @@ load_watermark_options.onclick = () => {
     watermark_opacity.value = opacity
     watermark_count.value = count
   } catch (e) {}
+
+  update_watermark()
 }
 
 store_watermark_options.onclick = () => {
