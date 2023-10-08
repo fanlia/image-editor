@@ -103,8 +103,8 @@ class ImageEditor {
     const ctx = this.ctx
 
     ctx.beginPath()
-    ctx.moveTo(p1.x + x_offset, p1.y + y_offset)
-    ctx.lineTo(p2.x + x_offset, p2.y - y_offset)
+    ctx.moveTo(p1.x + x_offset, p1.y)
+    ctx.lineTo(p2.x + x_offset, p2.y)
     ctx.stroke()
   }
 
