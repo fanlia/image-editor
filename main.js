@@ -61,6 +61,7 @@ document.querySelector('#app').innerHTML = `
     <input type="file" name="source_images" id="source_images" multiple accept="image/*" />
     <label>
     </p>
+    <p>点击图片即可下载</p>
     <div id="preview_images">请先选择图片</div>
   </div>
 `
@@ -230,6 +231,17 @@ const update_watermark = async () => {
   }
 }
 
+const download = (canvas, file) => {
+  canvas.toBlob(blob => {
+    const a = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    a.href = url
+    a.download = file.name
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+  }, file.type)
+}
+
 const update_images = async (files) => {
   const watermark_options = get_watermark_options()
   preview_images.innerHTML = ''
@@ -237,7 +249,11 @@ const update_images = async (files) => {
     const image = await read_image(file)
     const editor = new ImageEditor(image)
     editor.updateText(watermark_options)
-    preview_images.append(editor.canvas)
+    const canvas = editor.canvas
+    canvas.onclick = (e) => {
+      download(canvas, file)
+    }
+    preview_images.append(canvas)
     editors.push(editor)
   }
 }
