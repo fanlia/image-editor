@@ -8,7 +8,7 @@ document.querySelector('#app').innerHTML = `
     <p>
     <label>
     <span>文字:</span>
-    <input type="text" name="watermark_text" id="watermark_text" value="梧桐8686"/>
+    <input type="text" name="watermark_text" id="watermark_text" value="watermark"/>
     <label>
     </p>
     <p>
@@ -26,7 +26,7 @@ document.querySelector('#app').innerHTML = `
     <p>
     <label>
     <span>颜色:</span>
-    <input type="color" name="watermark_color" id="watermark_color" value="#000000"/>
+    <input type="color" name="watermark_color" id="watermark_color" value="#FFFFFF"/>
     <label>
     </p>
     <p>
@@ -37,13 +37,24 @@ document.querySelector('#app').innerHTML = `
     </p>
     <p>
     <label>
-    <span>选择图片:</span>
-    <input type="file" name="source_images" id="source_images" multiple accept="image/*" />
+    <span>透明:</span>
+    <input type="range" name="watermark_opacity" id="watermark_opacity" value="30"/>
     <label>
+    </p>
+    <p>
+    <span>模板:</span>
+    <button name="load_watermark_options" id="load_watermark_options">加载</button>
+    <button name="store_watermark_options" id="store_watermark_options">保存</button>
     </p>
     </div>
     <hr />
     <h3>图片预览</h3>
+    <p>
+    <label>
+    <span>选择图片:</span>
+    <input type="file" name="source_images" id="source_images" multiple accept="image/*" />
+    <label>
+    </p>
     <div id="preview_images">请先选择图片</div>
   </div>
 `
@@ -52,9 +63,12 @@ const watermark_text = document.querySelector('#watermark_text')
 const watermark_font_family = document.querySelector('#watermark_font_family')
 const watermark_font_size = document.querySelector('#watermark_font_size')
 const watermark_color = document.querySelector('#watermark_color')
+const watermark_opacity = document.querySelector('#watermark_opacity')
 const watermark_stroke = document.querySelector('#watermark_stroke')
 const source_images = document.querySelector('#source_images')
 const preview_images = document.querySelector('#preview_images')
+const load_watermark_options = document.querySelector('#load_watermark_options')
+const store_watermark_options = document.querySelector('#store_watermark_options')
 
 const read_image = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader()
@@ -91,8 +105,10 @@ class ImageEditor {
     font_family,
     color,
     stroke,
+    opacity,
   }) {
     this.updateImage()
+    this.ctx.globalAlpha = opacity / 100
     this.ctx.font = `${font_size}px ${font_family}`
     if (stroke) {
       this.ctx.strokeStyle = color
@@ -113,6 +129,7 @@ const get_watermark_options = () => {
   const font_family = watermark_font_family.value
   const color = watermark_color.value
   const stroke = watermark_stroke.checked
+  const opacity = watermark_opacity.value
 
   return {
     text,
@@ -120,6 +137,7 @@ const get_watermark_options = () => {
     font_family,
     color,
     stroke,
+    opacity,
   }
 }
 
@@ -148,10 +166,38 @@ watermark_font_size.oninput = update_watermark
 watermark_font_family.oninput = update_watermark
 watermark_color.oninput = update_watermark
 watermark_stroke.onchange = update_watermark
+watermark_opacity.oninput = update_watermark
 
 source_images.onchange = async (e) => {
   const files = e.target.files
   update_images(files)
 }
 
+load_watermark_options.onclick = () => {
+  const watermark_options_string = localStorage.getItem('watermark_options')
+  if (!watermark_options_string) return
+
+  try {
+    const {
+      text,
+      font_size,
+      font_family,
+      color,
+      stroke,
+      opacity,
+    } = JSON.parse(watermark_options_string)
+    watermark_text.value = text
+    watermark_font_size.value = font_size
+    watermark_font_family.value = font_family
+    watermark_color.value = color
+    watermark_stroke.checked = stroke
+    watermark_opacity.value = opacity
+  } catch (e) {}
+}
+
+store_watermark_options.onclick = () => {
+  const watermark_options = get_watermark_options()
+  localStorage.setItem('watermark_options', JSON.stringify(watermark_options))
+  alert('保存成功')
+}
 
