@@ -123,7 +123,7 @@ class ImageEditor {
     color,
     stroke,
     opacity,
-    count = 4,
+    count,
   }) {
     this.updateImage()
 
