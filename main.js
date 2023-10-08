@@ -99,11 +99,8 @@ class ImageEditor {
     return this
   }
 
-  drawLine(p1, p2, y_offset, x_offset) {
+  drawLine(p1, p2, x_offset, y_offset) {
     const ctx = this.ctx
-
-    x_offset = x_offset / 2
-    y_offset = y_offset / 2
 
     ctx.beginPath()
     ctx.moveTo(p1.x + x_offset, p1.y + y_offset)
@@ -174,18 +171,21 @@ class ImageEditor {
         continue
       }
 
+      const x_offset = text_width / 2
+      const y_offset = font_size / 2
+
       // draw lines
       if (j === 0) {
         const se = points_list[i+1][j+1]
-        this.drawLine(point, se, font_size, text_width)
+        this.drawLine(point, se, x_offset, y_offset)
       } else if (j === cols - 1) {
         const sw = points_list[i+1][j-1]
-        this.drawLine(sw, point, font_size, text_width)
+        this.drawLine(sw, point, x_offset, y_offset)
       } else {
         const se = points_list[i+1][j+1]
-        this.drawLine(point, se, font_size, text_width)
+        this.drawLine(point, se, x_offset, y_offset)
         const sw = points_list[i+1][j-1]
-        this.drawLine(sw, point, font_size, text_width)
+        this.drawLine(sw, point, x_offset, y_offset)
       }
     }
     return this
