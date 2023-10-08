@@ -38,7 +38,7 @@ document.querySelector('#app').innerHTML = `
     <p>
     <label>
     <span>透明:</span>
-    <input type="range" name="watermark_opacity" id="watermark_opacity" value="30"/>
+    <input type="range" name="watermark_opacity" id="watermark_opacity" value="10"/>
     <label>
     </p>
     <p>
@@ -99,6 +99,18 @@ class ImageEditor {
     return this
   }
 
+  drawLine(p1, p2, y_offset, x_offset) {
+    const ctx = this.ctx
+
+    x_offset = x_offset / 2
+    y_offset = y_offset / 2
+
+    ctx.beginPath()
+    ctx.moveTo(p1.x + x_offset, p1.y + y_offset)
+    ctx.lineTo(p2.x + x_offset, p2.y - y_offset)
+    ctx.stroke()
+  }
+
   updateText({
     text,
     font_size,
@@ -108,14 +120,73 @@ class ImageEditor {
     opacity,
   }) {
     this.updateImage()
-    this.ctx.globalAlpha = opacity / 100
-    this.ctx.font = `${font_size}px ${font_family}`
-    if (stroke) {
-      this.ctx.strokeStyle = color
-      this.ctx.strokeText(text, 10, font_size)
-    } else {
-      this.ctx.fillStyle = color
-      this.ctx.fillText(text, 10, font_size)
+
+    // set style
+    const ctx = this.ctx
+    ctx.globalAlpha = opacity / 100
+    ctx.font = `${font_size}px ${font_family}`
+    ctx.strokeStyle = color
+    ctx.fillStyle = color
+    ctx.lineWidth = 4
+    ctx.textBaseline = 'middle'
+
+    const { width: text_width } = ctx.measureText(text)
+
+    // calculate points
+    const rows = 4
+    const cols = 4
+
+    const width = Math.round(this.canvas.width / cols)
+    const height = Math.round(this.canvas.height / rows)
+
+    let points_list = []
+    for (let i = 0; i < rows; i++) {
+      let points = []
+      for (let j = 0; j < cols; j++) {
+        const x = i * width
+        const y = j * height + font_size
+
+        points.push({
+          x,
+          y,
+          i,
+          j,
+        })
+      }
+      points_list.push(points)
+    }
+
+    for (const point of points_list.flat()) {
+      const {x, y, i, j} = point
+      const enabled = (i + j) % 2 === 0
+      if (!enabled) {
+        continue
+      }
+
+      // draw text
+      if (stroke) {
+        ctx.strokeText(text, x, y)
+      } else {
+        ctx.fillText(text, x, y)
+      }
+
+      if (i === rows - 1) {
+        continue
+      }
+
+      // draw lines
+      if (j === 0) {
+        const se = points_list[i+1][j+1]
+        this.drawLine(point, se, font_size, text_width)
+      } else if (j === cols - 1) {
+        const sw = points_list[i+1][j-1]
+        this.drawLine(sw, point, font_size, text_width)
+      } else {
+        const se = points_list[i+1][j+1]
+        this.drawLine(point, se, font_size, text_width)
+        const sw = points_list[i+1][j-1]
+        this.drawLine(sw, point, font_size, text_width)
+      }
     }
     return this
   }
@@ -125,11 +196,11 @@ let editors = []
 
 const get_watermark_options = () => {
   const text = watermark_text.value
-  const font_size = watermark_font_size.value
+  const font_size = +watermark_font_size.value
   const font_family = watermark_font_family.value
   const color = watermark_color.value
   const stroke = watermark_stroke.checked
-  const opacity = watermark_opacity.value
+  const opacity = +watermark_opacity.value
 
   return {
     text,
