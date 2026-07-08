@@ -27,8 +27,9 @@ const read_image = (file) =>
     reader.onload = (e) => {
       const image = new Image()
       image.title = file.name
+      image.onload = () => resolve(image)
+      image.onerror = reject
       image.src = e.target.result
-      resolve(image)
     }
     reader.onerror = reject
     reader.readAsDataURL(file)
